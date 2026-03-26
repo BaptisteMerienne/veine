@@ -13,6 +13,11 @@ class MessageCreate(MessageBase):
     pass
 
 
+class SourceResponse(BaseModel):
+    filename: str
+    excerpt: str
+
+
 class MessageResponse(MessageBase):
     id: UUID
     conversation_id: UUID

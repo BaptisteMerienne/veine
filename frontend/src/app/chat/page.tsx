@@ -9,6 +9,7 @@ type Message = {
   id: string
   role: "user" | "assistant"
   content: string
+  sources?: { filename: string; excerpt: string }[]
 }
 
 export default function ChatPage() {
@@ -45,7 +46,8 @@ export default function ChatPage() {
       const assistantMessage: Message = {
         id: response.id,
         role: "assistant",
-        content: response.content
+        content: response.content,
+        sources: response.sources || []
       }
       setMessages((prev) => [...prev, assistantMessage])
     } catch (error) {

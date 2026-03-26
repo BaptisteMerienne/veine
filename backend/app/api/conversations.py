@@ -7,6 +7,7 @@ from app.schemas.conversation import (
     ConversationResponse,
     MessageCreate,
     MessageResponse,
+    SourceResponse,
 )
 from app.services.llm import generate_response
 from app.services.knowledge import search_knowledge, format_context
@@ -70,4 +71,20 @@ async def add_message(
     db.add(assistant_message)
     db.commit()
     db.refresh(assistant_message)
-    return assistant_message
+
+    sources = [
+        SourceResponse(
+            filename=chunk.document.filename if chunk.document else "inconnu",
+            excerpt=chunk.content[:150] + "..."
+        )
+        for chunk in semantic_chunks
+    ]
+
+    return {
+        "id": str(assistant_message.id),
+        "conversation_id": str(assistant_message.conversation_id),
+        "role": assistant_message.role,
+        "content": assistant_message.content,
+        "created_at": assistant_message.created_at,
+        "sources": [s.dict() for s in sources],
+    }
