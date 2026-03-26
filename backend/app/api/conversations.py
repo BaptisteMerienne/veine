@@ -8,6 +8,7 @@ from app.schemas.conversation import (
     MessageCreate,
     MessageResponse,
 )
+from app.services.llm import generate_response
 
 router = APIRouter()
 
@@ -34,13 +35,29 @@ def get_conversation(conversation_id: str, db: Session = Depends(get_db)):
 @router.post(
     "/conversations/{conversation_id}/messages", response_model=MessageResponse
 )
-def add_message(
+async def add_message(
     conversation_id: str, data: MessageCreate, db: Session = Depends(get_db)
 ):
-    message = Message(
-        conversation_id=conversation_id, role=data.role, content=data.content
+    user_message = Message(
+        conversation_id=conversation_id, role="user", content=data.content
     )
-    db.add(message)
+    db.add(user_message)
     db.commit()
-    db.refresh(message)
-    return message
+
+    conversation = (
+        db.query(Conversation).filter(Conversation.id == conversation_id).first()
+    )
+
+    history = [
+        {"role": msg.role, "content": msg.content} for msg in conversation.messages
+    ]
+
+    ai_response = await generate_response(history)
+
+    assistant_message = Message(
+        conversation_id=conversation_id, role="assistant", content=ai_response
+    )
+    db.add(assistant_message)
+    db.commit()
+    db.refresh(assistant_message)
+    return assistant_message

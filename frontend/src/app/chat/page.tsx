@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import MessageList from "@/components/chat/MessageList"
 import ChatInput from "@/components/chat/ChatInput"
+import { createConversation, sendMessage } from "@/lib/api/chat"
 
 type Message = {
-  id: number
+  id: string
   role: "user" | "assistant"
   content: string
 }
@@ -13,16 +14,25 @@ type Message = {
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: 1,
+      id: "welcome",
       role: "assistant",
       content: "Bonjour ! Je suis Veine, votre assistant documentaire. Comment puis-je vous aider ?"
     }
   ])
+  const [conversationId, setConversationId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(() => {
+    createConversation().then((conv) => {
+      setConversationId(conv.id)
+    })
+  }, [])
+
   const handleSend = async (content: string) => {
+    if (!conversationId) return
+
     const userMessage: Message = {
-      id: messages.length + 1,
+      id: Math.random().toString(36).substring(2),
       role: "user",
       content
     }
@@ -30,16 +40,19 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMessage])
     setIsLoading(true)
 
-    // Réponse simulée pour l'instant
-    setTimeout(() => {
-      const botMessage: Message = {
-        id: messages.length + 2,
+    try {
+      const response = await sendMessage(conversationId, content)
+      const assistantMessage: Message = {
+        id: response.id,
         role: "assistant",
-        content: "Je recherche dans vos documents... (réponse simulée)"
+        content: response.content
       }
-      setMessages((prev) => [...prev, botMessage])
+      setMessages((prev) => [...prev, assistantMessage])
+    } catch (error) {
+      console.error("Erreur lors de l'envoi du message", error)
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
