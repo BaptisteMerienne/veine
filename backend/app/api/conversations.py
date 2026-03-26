@@ -9,6 +9,7 @@ from app.schemas.conversation import (
     MessageResponse,
 )
 from app.services.llm import generate_response
+from app.services.knowledge import search_knowledge, format_context
 
 router = APIRouter()
 
@@ -44,6 +45,9 @@ async def add_message(
     db.add(user_message)
     db.commit()
 
+    knowledge_entries = search_knowledge(data.content, db)
+    context = format_context(knowledge_entries)
+
     conversation = (
         db.query(Conversation).filter(Conversation.id == conversation_id).first()
     )
@@ -52,7 +56,7 @@ async def add_message(
         {"role": msg.role, "content": msg.content} for msg in conversation.messages
     ]
 
-    ai_response = await generate_response(history)
+    ai_response = await generate_response(history, context)
 
     assistant_message = Message(
         conversation_id=conversation_id, role="assistant", content=ai_response

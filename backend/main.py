@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.conversations import router
+from app.api.conversations import router as conversations_router
+from app.api.knowledge import router as knowledge_router
 from app.db.database import Base, engine
-from app.models import conversation
+from app.models import conversation, knowledge
 
 Base.metadata.create_all(bind=engine)
 
@@ -20,7 +21,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router, prefix="/api")
+app.include_router(conversations_router, prefix="/api")
+app.include_router(knowledge_router, prefix="/api")
 
 
 @app.get("/")
