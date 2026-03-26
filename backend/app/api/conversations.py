@@ -10,6 +10,7 @@ from app.schemas.conversation import (
 )
 from app.services.llm import generate_response
 from app.services.knowledge import search_knowledge, format_context
+from app.services.search import semantic_search, format_chunks_context
 
 router = APIRouter()
 
@@ -46,7 +47,12 @@ async def add_message(
     db.commit()
 
     knowledge_entries = search_knowledge(data.content, db)
-    context = format_context(knowledge_entries)
+    knowledge_context = format_context(knowledge_entries)
+
+    semantic_chunks = semantic_search(data.content, db)
+    semantic_context = format_chunks_context(semantic_chunks)
+
+    full_context = knowledge_context + semantic_context
 
     conversation = (
         db.query(Conversation).filter(Conversation.id == conversation_id).first()
@@ -56,7 +62,7 @@ async def add_message(
         {"role": msg.role, "content": msg.content} for msg in conversation.messages
     ]
 
-    ai_response = await generate_response(history, context)
+    ai_response = await generate_response(history, full_context)
 
     assistant_message = Message(
         conversation_id=conversation_id, role="assistant", content=ai_response
