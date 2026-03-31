@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+
+* {
+  font-family: var(--font-jakarta), sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-fraunces), serif;
+}
 
 @custom-variant dark (&:is(.dark *));
 
