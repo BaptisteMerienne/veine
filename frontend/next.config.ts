@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['localhost', '127.0.0.1', '172.22.83.193'],
+  transpilePackages: ["react-markdown"],
 };
 
 export default nextConfig;

@@ -1,3 +1,5 @@
+import ReactMarkdown from "react-markdown"
+
 type Source = {
   filename: string
   excerpt: string
@@ -26,7 +28,13 @@ export default function MessageList({ messages }: Props) {
                 : "self-start bg-neutral-100 text-neutral-900"
             }`}
           >
-            {message.content}
+            {message.role === "user" ? (
+              message.content
+            ) : (
+              <div className="prose prose-sm prose-neutral max-w-none">
+                <ReactMarkdown>{message.content}</ReactMarkdown>
+              </div>
+            )}
           </div>
 
           {message.sources && message.sources.length > 0 && (
