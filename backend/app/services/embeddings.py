@@ -1,12 +1,12 @@
-from sentence_transformers import SentenceTransformer
-import numpy as np
+from mistralai.client import Mistral
+from app.core.config import settings
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+client = Mistral(api_key=settings.MISTRAL_API_KEY)
 
 
 def generate_embedding(text: str) -> list[float]:
-    embedding = model.encode(text)
-    return embedding.tolist()
+    response = client.embeddings.create(model="mistral-embed", inputs=[text])
+    return response.data[0].embedding
 
 
 def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:

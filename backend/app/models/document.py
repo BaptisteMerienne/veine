@@ -22,5 +22,5 @@ class DocumentChunk(Base):
     document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"))
     content = Column(Text, nullable=False)
     chunk_index = Column(Integer, nullable=False)
-    embedding = Column(Vector(384))
+    embedding = Column(Vector(1024))
     document = relationship("Document", back_populates="chunks")
